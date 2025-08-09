@@ -1,0 +1,48 @@
+{
+  "mcpServers": {
+    "railway-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@railway/mcp"
+      ],
+      "env": {
+        "RAILWAY_API_TOKEN": "e2a89410-8aeb-419c-8020-741fba8f9bf9"
+      }
+    }
+  },
+  "railwayConfig": {
+    "projectName": "odoo-sportpit",
+    "services": {
+      "web": {
+        "name": "odoo-sportpit",
+        "source": ".",
+        "builder": "DOCKERFILE",
+        "dockerfilePath": "./Dockerfile",
+        "startCommand": "odoo -c /etc/odoo/odoo.conf",
+        "healthcheckPath": "/web/health",
+        "port": 8069,
+        "envVars": {
+          "PORT": 8069,
+          "WORKERS": 2,
+          "LANG": "ru_RU.UTF-8",
+          "TZ": "Europe/Moscow"
+        }
+      },
+      "postgres": {
+        "name": "odoo-postgres",
+        "source": "postgres:15",
+        "envVars": {
+          "POSTGRES_DB": "odoo_sportpit",
+          "POSTGRES_USER": "odoo",
+          "POSTGRES_INITDB_ARGS": "--encoding=UTF8 --locale=ru_RU.UTF-8"
+        }
+      }
+    },
+    "deploy": {
+      "numReplicas": 1,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10
+    }
+  }
+}
