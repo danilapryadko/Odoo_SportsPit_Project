@@ -6,30 +6,8 @@
   },
   "deploy": {
     "numReplicas": 1,
-    "startCommand": "odoo -c /etc/odoo/odoo.conf -i base,l10n_ru --load-language=ru_RU",
+    "startCommand": "odoo --http-port=${PORT:-8069} --db_host=${DB_HOST} --db_port=${DB_PORT:-5432} --db_user=${DB_USER} --db_password=${DB_PASSWORD} --database=${DB_NAME} --admin_passwd=${ADMIN_PASSWORD:-admin}",
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10,
-    "healthcheckPath": "/web/health",
-    "healthcheckTimeout": 30
-  },
-  "variables": {
-    "PORT": 8069,
-    "DATABASE_HOST": "${{Postgres.DATABASE_HOST}}",
-    "DATABASE_PORT": "${{Postgres.DATABASE_PORT}}",
-    "DATABASE_USER": "${{Postgres.DATABASE_USER}}",
-    "DATABASE_PASSWORD": "${{Postgres.DATABASE_PASSWORD}}",
-    "DATABASE_NAME": "${{Postgres.DATABASE_NAME}}",
-    "ADMIN_PASSWORD": "${{secret}}",
-    "WORKERS": 2,
-    "MAX_CRON_THREADS": 1,
-    "LIMIT_MEMORY_HARD": 2684354560,
-    "LIMIT_MEMORY_SOFT": 2147483648,
-    "LIMIT_REQUEST": 8192,
-    "LIMIT_TIME_CPU": 60,
-    "LIMIT_TIME_REAL": 120,
-    "LOG_LEVEL": "info",
-    "SMTP_SERVER": "localhost",
-    "SMTP_PORT": 25,
-    "SMTP_SSL": false
+    "restartPolicyMaxRetries": 3
   }
 }
