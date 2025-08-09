@@ -6,7 +6,6 @@
   },
   "deploy": {
     "numReplicas": 1,
-    "startCommand": "odoo",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
