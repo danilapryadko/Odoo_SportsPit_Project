@@ -20,6 +20,12 @@ ENV LANGUAGE=ru_RU:ru
 ENV LC_ALL=ru_RU.UTF-8
 ENV TZ=Europe/Moscow
 
+# Установка необходимых утилит для работы с БД
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
+
 # Создание директории для кастомных модулей
 RUN mkdir -p /mnt/extra-addons
 
@@ -34,5 +40,14 @@ USER odoo
 # Expose порт
 EXPOSE 8069
 
-# Команда запуска будет переопределена в Railway
-CMD ["odoo"]
+# Копируем entrypoint скрипт
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Настройка для работы с внешней БД
+ENV DB_PORT_5432_TCP_ADDR=${DB_HOST}
+ENV DB_PORT_5432_TCP_PORT=${DB_PORT}
+
+# Используем entrypoint для инициализации
+ENTRYPOINT ["/entrypoint.sh"]
+CMD []
