@@ -1,0 +1,79 @@
+# Gitleaks configuration file
+# https://github.com/zricethezav/gitleaks
+
+title = "Odoo SportsPit Gitleaks Config"
+
+[allowlist]
+description = "Allowlist for Odoo SportsPit"
+regexes = [
+    '''example''',
+    '''Example''',
+    '''EXAMPLE''',
+    '''dummy''',
+    '''DUMMY''',
+    '''fake''',
+    '''FAKE''',
+    '''test''',
+    '''TEST''',
+]
+paths = [
+    '''\.example''',
+    '''example\.''',
+    '''/tests/''',
+    '''test_''',
+]
+
+[[rules]]
+description = "AWS Access Key"
+regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
+tags = ["aws", "access", "key"]
+
+[[rules]]
+description = "AWS Secret Key"
+regex = '''(?i)aws(.{0,20})?(?-i)['\"][0-9a-zA-Z\/+]{40}['\"]'''
+tags = ["aws", "secret", "key"]
+
+[[rules]]
+description = "API Key"
+regex = '''(?i)(api[_\-\s]?key)(.{0,20})?['\"][0-9a-zA-Z]{32,45}['\"]'''
+tags = ["api", "key"]
+
+[[rules]]
+description = "Generic Secret"
+regex = '''(?i)(secret|password|passwd|pwd|token|tkn)(.{0,20})?['\"][^'\"]{10,}['\"]'''
+tags = ["secret", "password", "token"]
+
+[[rules]]
+description = "Private Key"
+regex = '''-----BEGIN (RSA|DSA|EC|PGP) PRIVATE KEY-----'''
+tags = ["private", "key"]
+
+[[rules]]
+description = "Database URL with password"
+regex = '''(?i)(postgres|postgresql|mysql|mongodb|redis|amqp):\/\/[^:]+:[^@]+@[^\/]+'''
+tags = ["database", "password", "url"]
+
+[[rules]]
+description = "Railway Token"
+regex = '''(?i)railway[_\-\s]?token['\"][^'\"]{20,}['\"]'''
+tags = ["railway", "token"]
+
+[[rules]]
+description = "GitHub Token"
+regex = '''ghp_[0-9a-zA-Z]{36}|gho_[0-9a-zA-Z]{36}|github_pat_[0-9a-zA-Z]{22}_[0-9a-zA-Z]{59}'''
+tags = ["github", "token"]
+
+[[rules]]
+description = "Odoo Admin Password"
+regex = '''(?i)admin[_\-\s]?passw(or)?d['\"][^'\"]{8,}['\"]'''
+tags = ["odoo", "admin", "password"]
+
+[[rules]]
+description = "Mercury API Credentials"
+regex = '''(?i)mercury[_\-\s]?(api|key|secret|token)['\"][^'\"]{10,}['\"]'''
+tags = ["mercury", "api", "credentials"]
+
+[[rules]]
+description = "Chestny Znak Credentials"
+regex = '''(?i)(chestny|znak|честный|знак)[_\-\s]?(api|key|secret|token)['\"][^'\"]{10,}['\"]'''
+tags = ["chestny_znak", "api", "credentials"]
