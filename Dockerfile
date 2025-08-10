@@ -10,11 +10,11 @@ RUN chown odoo:odoo /etc/odoo/odoo.conf
 
 USER odoo
 
-# Переменные окружения для подключения к новому PostgreSQL
-ENV DB_HOST=postgresql-production.railway.internal
+# Переменные окружения
+ENV DB_HOST=postgresql-odoo.railway.internal
 ENV DB_PORT=5432
 ENV DB_USER=odoo
 ENV DB_PASSWORD=odoo_sportpit_2024
 
-# Запускаем Odoo
-CMD ["odoo", "-c", "/etc/odoo/odoo.conf", "-d", "odoo_sportpit", "--db-filter=^odoo_sportpit$", "--no-database-list"]
+# Запускаем Odoo без лишних флагов
+CMD ["odoo", "-c", "/etc/odoo/odoo.conf"]
