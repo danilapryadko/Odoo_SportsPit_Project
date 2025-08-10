@@ -10,5 +10,5 @@ RUN chown odoo:odoo /etc/odoo/odoo.conf
 
 USER odoo
 
-# Запускаем Odoo
-CMD ["odoo", "-c", "/etc/odoo/odoo.conf"]
+# Запускаем Odoo БЕЗ обновления модулей
+CMD ["odoo", "-c", "/etc/odoo/odoo.conf", "-d", "odoo_sportpit", "--without-demo=all", "--load-language=", "--max-cron-threads=0"]
