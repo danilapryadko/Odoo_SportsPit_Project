@@ -9,8 +9,6 @@ db_host = ${DB_HOST}
 db_port = ${DB_PORT}
 db_user = ${DB_USER}
 db_password = ${DB_PASSWORD}
-db_name = ${DB_NAME}
-dbfilter = ^${DB_NAME}$
 
 # Web server settings  
 xmlrpc_port = ${PORT}
@@ -33,7 +31,7 @@ limit_request = 8192
 limit_time_cpu = 60
 limit_time_real = 120
 limit_time_real_cron = -1
-list_db = False
+list_db = True
 log_db = False
 log_handler = :INFO
 log_level = info
