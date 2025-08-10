@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Скрипт инициализации базы данных при запуске контейнера
+# Скрипт запуска Odoo
 
-echo "=== Database initialization script ==="
+echo "=== Starting Odoo ==="
 
 # Ждём доступности PostgreSQL
 until PGPASSWORD=odoo_sportpit_2024 psql -h postgresql-odoo.railway.internal -U odoo -d postgres -c '\q'; do
@@ -18,11 +18,9 @@ DB_EXISTS=$(PGPASSWORD=odoo_sportpit_2024 psql -h postgresql-odoo.railway.intern
 if [ "$DB_EXISTS" != "1" ]; then
     echo "Creating database odoo_sportpit..."
     PGPASSWORD=odoo_sportpit_2024 psql -h postgresql-odoo.railway.internal -U odoo -d postgres -c "CREATE DATABASE odoo_sportpit WITH OWNER odoo ENCODING 'UTF8';"
-    echo "Database created!"
-else
-    echo "Database odoo_sportpit already exists"
+    echo "Database created! Will initialize on first run..."
 fi
 
 # Запускаем Odoo
-echo "Starting Odoo..."
-exec odoo -c /etc/odoo/odoo.conf --init base
+echo "Starting Odoo server..."
+exec odoo -c /etc/odoo/odoo.conf
