@@ -1,3 +1,2 @@
-healthcheckPath: /web/health
-healthcheckTimeout: 300
-restartPolicyMaxRetries: 10
+# Railway configuration
+# No healthcheck - let Odoo start without timeouts
