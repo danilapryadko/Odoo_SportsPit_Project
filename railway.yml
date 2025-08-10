@@ -1,4 +1,2 @@
-healthcheckPath: /web/health
-healthcheckTimeout: 900
+healthcheckPath: 
 restartPolicyMaxRetries: 3
-deploymentTimeout: 1200
