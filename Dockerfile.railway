@@ -6,17 +6,18 @@ USER root
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     postgresql-client \
-    curl && \
+    curl \
+    envsubst && \
     rm -rf /var/lib/apt/lists/*
 
-# Создаем оптимизированный конфиг для Railway
+# Создаем шаблон конфигурации
 RUN echo '[options]\n\
 # Database from Railway environment\n\
-db_host = ${PGHOST}\n\
-db_port = ${PGPORT}\n\
-db_user = ${PGUSER}\n\
-db_password = ${PGPASSWORD}\n\
-db_name = ${PGDATABASE}\n\
+db_host = PGHOST_PLACEHOLDER\n\
+db_port = PGPORT_PLACEHOLDER\n\
+db_user = PGUSER_PLACEHOLDER\n\
+db_password = PGPASSWORD_PLACEHOLDER\n\
+db_name = PGDATABASE_PLACEHOLDER\n\
 dbfilter = .*\n\
 list_db = False\n\
 \n\
@@ -36,22 +37,42 @@ log_handler = :WARNING\n\
 admin_passwd = admin18\n\
 \n\
 # Server\n\
-http_port = ${PORT:-8069}' > /etc/odoo/railway.conf
+http_port = PORT_PLACEHOLDER' > /etc/odoo/railway.conf.template
 
-# Создаем минимальный startup скрипт
+# Создаем startup скрипт с динамической подстановкой переменных
 RUN echo '#!/bin/bash\n\
 echo "Starting Odoo 18 for Railway..."\n\
 echo "Database: $PGDATABASE at $PGHOST:$PGPORT"\n\
 \n\
+# Создаем конфиг с подстановкой переменных\n\
+sed -e "s/PGHOST_PLACEHOLDER/$PGHOST/g" \\\n\
+    -e "s/PGPORT_PLACEHOLDER/$PGPORT/g" \\\n\
+    -e "s/PGUSER_PLACEHOLDER/$PGUSER/g" \\\n\
+    -e "s/PGPASSWORD_PLACEHOLDER/$PGPASSWORD/g" \\\n\
+    -e "s/PGDATABASE_PLACEHOLDER/$PGDATABASE/g" \\\n\
+    -e "s/PORT_PLACEHOLDER/${PORT:-8069}/g" \\\n\
+    /etc/odoo/railway.conf.template > /etc/odoo/railway.conf\n\
+\n\
+echo "Configuration created with:"\n\
+echo "  Host: $PGHOST"\n\
+echo "  Port: $PGPORT"\n\
+echo "  Database: $PGDATABASE"\n\
+echo "  User: $PGUSER"\n\
+echo "  HTTP Port: ${PORT:-8069}"\n\
+\n\
 # Небольшая задержка для БД\n\
 sleep 5\n\
 \n\
-# Запускаем Odoo без обновления модулей для быстрого старта\n\
-exec odoo \
---config=/etc/odoo/railway.conf \
---db-filter="^${PGDATABASE}$" \
---no-database-list \
---stop-after-init=False \
+# Запускаем Odoo с правильными параметрами БД\n\
+exec odoo \\\n\
+--config=/etc/odoo/railway.conf \\\n\
+--db-filter="^${PGDATABASE}$" \\\n\
+--database=$PGDATABASE \\\n\
+--db_host=$PGHOST \\\n\
+--db_port=$PGPORT \\\n\
+--db_user=$PGUSER \\\n\
+--db_password=$PGPASSWORD \\\n\
+--no-database-list \\\n\
 --without-demo=all' > /start.sh && chmod +x /start.sh
 
 USER odoo
