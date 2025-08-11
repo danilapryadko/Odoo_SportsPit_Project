@@ -7,6 +7,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     postgresql-client \
     curl \
+    netcat-openbsd \
     gettext-base && \
     rm -rf /var/lib/apt/lists/*
 
@@ -39,6 +40,13 @@ admin_passwd = admin18\n\
 # Server\n\
 http_port = PORT_PLACEHOLDER' > /etc/odoo/railway.conf.template
 
+# Создаем простой healthcheck скрипт
+RUN echo '#!/bin/bash\n\
+echo "HTTP/1.1 200 OK"\n\
+echo "Content-Type: text/plain"\n\
+echo ""\n\
+echo "OK"' > /healthcheck.sh && chmod +x /healthcheck.sh
+
 # Создаем startup скрипт с динамической подстановкой переменных
 RUN echo '#!/bin/bash\n\
 echo "Starting Odoo 18 for Railway..."\n\
@@ -60,19 +68,32 @@ echo "  Database: $PGDATABASE"\n\
 echo "  User: $PGUSER"\n\
 echo "  HTTP Port: ${PORT:-8069}"\n\
 \n\
-# Небольшая задержка для БД\n\
-sleep 5\n\
+# Проверяем подключение к БД\n\
+export PGPASSWORD=$PGPASSWORD\n\
+until psql -h $PGHOST -p $PGPORT -U $PGUSER -d postgres -c "SELECT 1" > /dev/null 2>&1; do\n\
+    echo "Waiting for PostgreSQL..."\n\
+    sleep 2\n\
+done\n\
+echo "PostgreSQL is ready!"\n\
 \n\
-# Запускаем Odoo с правильными параметрами БД\n\
+# Проверяем существует ли база данных\n\
+if psql -h $PGHOST -p $PGPORT -U $PGUSER -lqt | cut -d \\| -f 1 | grep -qw $PGDATABASE; then\n\
+    echo "Database $PGDATABASE exists"\n\
+else\n\
+    echo "Creating database $PGDATABASE..."\n\
+    createdb -h $PGHOST -p $PGPORT -U $PGUSER $PGDATABASE\n\
+fi\n\
+\n\
+# Запускаем Odoo с инициализацией БД если нужно\n\
 exec odoo \\\n\
 --config=/etc/odoo/railway.conf \\\n\
---db-filter="^${PGDATABASE}$" \\\n\
---database=$PGDATABASE \\\n\
 --db_host=$PGHOST \\\n\
 --db_port=$PGPORT \\\n\
 --db_user=$PGUSER \\\n\
 --db_password=$PGPASSWORD \\\n\
---no-database-list \\\n\
+--database=$PGDATABASE \\\n\
+--http-port=${PORT:-8069} \\\n\
+--init=base \\\n\
 --without-demo=all' > /start.sh && chmod +x /start.sh
 
 USER odoo
