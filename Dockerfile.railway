@@ -9,7 +9,7 @@ RUN apt-get update && \
     curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Create optimized config for Railway
+# Create optimized config for Railway with proxy support
 RUN echo '[options]\n\
 # Database from Railway environment\n\
 db_host = ${PGHOST}\n\
@@ -35,9 +35,11 @@ log_handler = :WARNING\n\
 # Admin\n\
 admin_passwd = ${ADMIN_PASSWORD:-SportPit2024Master}\n\
 \n\
-# Server\n\
+# Server - CRITICAL for Railway proxy\n\
 http_port = ${PORT:-8069}\n\
 proxy_mode = True\n\
+web.base.url = https://odoosportspitproject-production.up.railway.app\n\
+web.base.url.freeze = True\n\
 \n\
 # SMTP\n\
 smtp_server = smtp.beget.com\n\
