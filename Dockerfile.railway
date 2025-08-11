@@ -1,4 +1,4 @@
-# Odoo 18.0 - последняя версия
+# Odoo 18.0 - последняя версия с чистой БД
 FROM odoo:18.0
 
 USER root
@@ -8,6 +8,10 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
+
+# Копируем скрипт инициализации БД
+COPY scripts/init_db.sh /init_db.sh
+RUN chmod +x /init_db.sh
 
 # Создаем конфиг для Railway
 RUN echo '[options]\n\
@@ -20,8 +24,24 @@ http_port = ${PORT:-8069}\n\
 admin_passwd = admin18\n\
 list_db = False' > /etc/odoo/odoo.conf
 
+# Создаем стартовый скрипт
+RUN echo '#!/bin/bash\n\
+echo "Запуск Odoo 18..."\n\
+echo "База данных: $PGDATABASE"\n\
+echo "Хост: $PGHOST:$PGPORT"\n\
+\n\
+# Инициализируем БД при первом запуске\n\
+if [ ! -f /var/lib/odoo/.db_initialized ]; then\n\
+    echo "Первый запуск - инициализация БД..."\n\
+    /init_db.sh\n\
+    touch /var/lib/odoo/.db_initialized\n\
+fi\n\
+\n\
+# Запускаем Odoo\n\
+exec odoo -c /etc/odoo/odoo.conf' > /start.sh && chmod +x /start.sh
+
 USER odoo
 
 EXPOSE 8069
 
-CMD ["odoo", "-c", "/etc/odoo/odoo.conf"]
+ENTRYPOINT ["/start.sh"]
