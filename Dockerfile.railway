@@ -1,43 +1,61 @@
-# Odoo 18.0 для Railway с healthcheck
 FROM odoo:18.0
 
 USER root
 
-# Устанавливаем netcat для простого healthcheck сервера
-RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
+# Установка необходимых пакетов
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    postgresql-client \
+    curl && \
+    rm -rf /var/lib/apt/lists/*
 
-# Создаем скрипт запуска с healthcheck сервером
+# Создаем оптимизированный конфиг для Railway
+RUN echo '[options]\n\
+# Database from Railway environment\n\
+db_host = ${PGHOST}\n\
+db_port = ${PGPORT}\n\
+db_user = ${PGUSER}\n\
+db_password = ${PGPASSWORD}\n\
+db_name = ${PGDATABASE}\n\
+dbfilter = .*\n\
+list_db = False\n\
+\n\
+# Performance - single process mode for Railway\n\
+workers = 0\n\
+max_cron_threads = 1\n\
+limit_time_cpu = 600\n\
+limit_time_real = 1200\n\
+limit_memory_soft = 1342177280\n\
+limit_memory_hard = 1610612736\n\
+\n\
+# Logging\n\
+log_level = warn\n\
+log_handler = :WARNING\n\
+\n\
+# Admin\n\
+admin_passwd = admin18\n\
+\n\
+# Server\n\
+http_port = ${PORT:-8069}' > /etc/odoo/railway.conf
+
+# Создаем минимальный startup скрипт
 RUN echo '#!/bin/bash\n\
-echo "Starting services for Railway..."\n\
+echo "Starting Odoo 18 for Railway..."\n\
+echo "Database: $PGDATABASE at $PGHOST:$PGPORT"\n\
 \n\
-# Запускаем простой healthcheck сервер на порту 8069\n\
-while true; do\n\
-  echo -e "HTTP/1.1 200 OK\\r\\nContent-Length: 2\\r\\n\\r\\nOK" | nc -l -p 8069 -q 1\n\
-done &\n\
+# Небольшая задержка для БД\n\
+sleep 5\n\
 \n\
-echo "Healthcheck server started on port 8069"\n\
-echo "Database host: $PGHOST"\n\
-echo "Database name: $PGDATABASE"\n\
-\n\
-# Ждем немного для стабилизации\n\
-sleep 10\n\
-\n\
-# Останавливаем healthcheck сервер\n\
-killall nc 2>/dev/null\n\
-\n\
-echo "Starting Odoo 18..."\n\
+# Запускаем Odoo без обновления модулей для быстрого старта\n\
 exec odoo \
---db_host="$PGHOST" \
---db_port="$PGPORT" \
---db_user="$PGUSER" \
---db_password="$PGPASSWORD" \
---db_name="$PGDATABASE" \
---http-port="8069" \
---without-demo=all \
---log-level=info' > /entrypoint.sh && chmod +x /entrypoint.sh
+--config=/etc/odoo/railway.conf \
+--db-filter="^${PGDATABASE}$" \
+--no-database-list \
+--stop-after-init=False \
+--without-demo=all' > /start.sh && chmod +x /start.sh
 
 USER odoo
 
 EXPOSE 8069
 
-ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
+ENTRYPOINT ["/start.sh"]
