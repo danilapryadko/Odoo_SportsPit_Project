@@ -1,0 +1,49 @@
+# fly.toml app configuration file
+#
+app = "odoo-sportspit"
+primary_region = "ams"
+kill_signal = "SIGINT"
+kill_timeout = "30s"
+
+[build]
+  dockerfile = "Dockerfile.fly"
+
+[env]
+  DB_HOST = "turntable.proxy.rlwy.net"
+  DB_PORT = "38149"
+  DB_USER = "odoo"
+  DB_PASSWORD = "odoo_sportpit_2024"
+  DB_NAME = "odoo_sportpit"
+  ADMIN_PASSWORD = "SportPit2024Master"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8069
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "5s"
+
+[mounts]
+  source = "odoo_data"
+  destination = "/var/lib/odoo"
+  
+[[vm]]
+  memory = "2gb"
+  cpu_kind = "shared"
+  cpus = 2

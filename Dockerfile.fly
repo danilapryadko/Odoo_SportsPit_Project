@@ -1,0 +1,47 @@
+FROM odoo:17.0
+
+USER root
+
+# Установим postgresql-client
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
+# Копируем конфигурацию
+COPY odoo.conf /etc/odoo/odoo.conf
+
+# Создаём скрипт запуска для Fly
+RUN echo '#!/bin/bash\n\
+echo "Starting Odoo with Railway PostgreSQL..."\n\
+echo "DB_HOST: $DB_HOST"\n\
+echo "DB_PORT: $DB_PORT"\n\
+echo "DB_USER: $DB_USER"\n\
+echo "DB_NAME: $DB_NAME"\n\
+\n\
+# Пробуем подключиться к БД\n\
+for i in $(seq 1 10); do\n\
+  echo "Attempting PostgreSQL connection ($i/10)..."\n\
+  if PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d postgres -c "SELECT 1" >/dev/null 2>&1; then\n\
+    echo "PostgreSQL is ready!"\n\
+    break\n\
+  fi\n\
+  sleep 3\n\
+done\n\
+\n\
+# Создаём БД если не существует\n\
+echo "Checking database $DB_NAME..."\n\
+PGPASSWORD=$DB_PASSWORD createdb -h $DB_HOST -p $DB_PORT -U $DB_USER $DB_NAME 2>/dev/null || echo "Database already exists"\n\
+\n\
+# Запускаем Odoo\n\
+echo "Starting Odoo server..."\n\
+exec odoo -c /etc/odoo/odoo.conf' > /entrypoint.sh && \
+chmod +x /entrypoint.sh
+
+# Даём права
+RUN chown -R odoo:odoo /etc/odoo
+
+USER odoo
+
+# Порт для Fly
+EXPOSE 8069
+
+# Запуск
+ENTRYPOINT ["/entrypoint.sh"]
