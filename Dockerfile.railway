@@ -1,23 +1,30 @@
-# Максимально простой Odoo 18
+# Odoo 18.0 для Railway
 FROM odoo:18.0
 
-# Создаем скрипт запуска с задержкой
 USER root
+
+# Создаем скрипт запуска который правильно использует переменные
 RUN echo '#!/bin/bash\n\
-echo "Starting Odoo 18..."\n\
-echo "Waiting for database..."\n\
-sleep 10\n\
+echo "Starting Odoo 18 on Railway..."\n\
+echo "Database host: $PGHOST"\n\
+echo "Database port: $PGPORT"\n\
+echo "Database name: $PGDATABASE"\n\
+echo "HTTP port: ${PORT:-8069}"\n\
+echo "Waiting for database to be ready..."\n\
+sleep 5\n\
 echo "Starting Odoo server..."\n\
 exec odoo \
---db_host=$PGHOST \
---db_port=$PGPORT \
---db_user=$PGUSER \
---db_password=$PGPASSWORD \
---db_name=$PGDATABASE \
---http-port=${PORT:-8069} \
---without-demo=all' > /entrypoint.sh && chmod +x /entrypoint.sh
+--db_host="$PGHOST" \
+--db_port="$PGPORT" \
+--db_user="$PGUSER" \
+--db_password="$PGPASSWORD" \
+--db_name="$PGDATABASE" \
+--http-port="${PORT:-8069}" \
+--without-demo=all \
+--log-level=info' > /entrypoint.sh && chmod +x /entrypoint.sh
 
 USER odoo
+
 EXPOSE 8069
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]

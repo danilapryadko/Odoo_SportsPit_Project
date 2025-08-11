@@ -6,15 +6,3 @@ dockerfilePath = "Dockerfile.railway"
 numReplicas = 1
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
-# Полностью отключаем healthcheck
-healthcheckPath = ""
-healthcheckTimeout = 0
-skipHealthcheck = true
-
-[[services]]
-name = "odoo"
-type = "web"
-
-[environments.production]
-RAILWAY_SKIP_HEALTHCHECK = "true"
-PORT = "8069"
