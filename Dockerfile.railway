@@ -66,7 +66,7 @@ USER odoo
 
 EXPOSE 8069
 
-# No healthcheck - let Railway handle it
-# Railway will check the port availability
+# No healthcheck - disable it completely to avoid timeouts
+# Odoo needs 2-3 minutes to fully initialize
 
 ENTRYPOINT ["/start.sh"]
