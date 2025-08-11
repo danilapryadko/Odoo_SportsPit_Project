@@ -1,83 +1,27 @@
-FROM odoo:17.0
+# Odoo 18.0 - последняя версия
+FROM odoo:18.0
 
 USER root
 
-# Install only essential packages
+# Установка необходимых пакетов
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     postgresql-client \
-    curl && \
-    rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
-# Create optimized config for Railway with full HTTPS support
+# Создаем конфиг для Railway
 RUN echo '[options]\n\
-# Database from Railway environment\n\
 db_host = ${PGHOST}\n\
 db_port = ${PGPORT}\n\
 db_user = ${PGUSER}\n\
 db_password = ${PGPASSWORD}\n\
 db_name = ${PGDATABASE}\n\
-dbfilter = .*\n\
-list_db = False\n\
-\n\
-# Performance - single process mode for Railway\n\
-workers = 0\n\
-max_cron_threads = 1\n\
-limit_time_cpu = 600\n\
-limit_time_real = 1200\n\
-limit_memory_soft = 1342177280\n\
-limit_memory_hard = 1610612736\n\
-\n\
-# Logging\n\
-log_level = warn\n\
-log_handler = :WARNING\n\
-\n\
-# Admin\n\
-admin_passwd = ${ADMIN_PASSWORD:-SportPit2024Master}\n\
-\n\
-# Server - CRITICAL for Railway proxy with HTTPS\n\
 http_port = ${PORT:-8069}\n\
-proxy_mode = True\n\
-# Force HTTPS URLs everywhere\n\
-web.base.url = https://odoosportspitproject-production.up.railway.app\n\
-web.base.url.freeze = True\n\
-# Additional HTTPS enforcement\n\
-xmlrpc_interface = \n\
-netrpc_interface = \n\
-\n\
-# SMTP\n\
-smtp_server = smtp.beget.com\n\
-smtp_port = 25\n\
-smtp_user = noreply@usafitandjoy.com\n\
-smtp_password = KSnkzEMXg1V!' > /etc/odoo/railway.conf
-
-# Create startup script with HTTPS enforcement
-RUN echo '#!/bin/bash\n\
-echo "Starting Odoo for Railway with HTTPS..."\n\
-echo "Database: $PGDATABASE at $PGHOST:$PGPORT"\n\
-echo "Base URL: https://odoosportspitproject-production.up.railway.app"\n\
-\n\
-# Set environment variables for HTTPS\n\
-export ODOO_BASE_URL="https://odoosportspitproject-production.up.railway.app"\n\
-export ODOO_PROXY_MODE="True"\n\
-\n\
-# Wait briefly for DB\n\
-sleep 5\n\
-\n\
-# Start Odoo with HTTPS configuration\n\
-exec odoo \
---config=/etc/odoo/railway.conf \
---db-filter="^${PGDATABASE}$" \
---no-database-list \
---stop-after-init=False \
---load-language=ru_RU \
---without-demo=all \
---proxy-mode' > /start.sh && chmod +x /start.sh
+admin_passwd = admin18\n\
+list_db = False' > /etc/odoo/odoo.conf
 
 USER odoo
 
 EXPOSE 8069
 
-# No healthcheck - Railway handles it externally
-
-ENTRYPOINT ["/start.sh"]
+CMD ["odoo", "-c", "/etc/odoo/odoo.conf"]
