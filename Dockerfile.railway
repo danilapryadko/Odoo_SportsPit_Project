@@ -1,31 +1,23 @@
-# Простой Odoo 18.0 без лишней сложности
+# Максимально простой Odoo 18
 FROM odoo:18.0
 
+# Создаем скрипт запуска с задержкой
 USER root
-
-# Установка PostgreSQL клиента
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends postgresql-client && \
-    rm -rf /var/lib/apt/lists/*
-
-# Создаем простой конфиг
-RUN echo '[options]\n\
-db_host = ${PGHOST}\n\
-db_port = ${PGPORT}\n\
-db_user = ${PGUSER}\n\
-db_password = ${PGPASSWORD}\n\
-db_name = ${PGDATABASE}\n\
-http_port = ${PORT:-8069}\n\
-admin_passwd = admin18\n\
-list_db = False\n\
-# Отключаем лишние проверки для быстрого старта\n\
-db_maxconn = 10\n\
-limit_time_cpu = 600\n\
-limit_time_real = 1200' > /etc/odoo/odoo.conf
+RUN echo '#!/bin/bash\n\
+echo "Starting Odoo 18..."\n\
+echo "Waiting for database..."\n\
+sleep 10\n\
+echo "Starting Odoo server..."\n\
+exec odoo \
+--db_host=$PGHOST \
+--db_port=$PGPORT \
+--db_user=$PGUSER \
+--db_password=$PGPASSWORD \
+--db_name=$PGDATABASE \
+--http-port=${PORT:-8069} \
+--without-demo=all' > /entrypoint.sh && chmod +x /entrypoint.sh
 
 USER odoo
-
 EXPOSE 8069
 
-# Простой запуск без скриптов
-CMD ["odoo", "-c", "/etc/odoo/odoo.conf"]
+ENTRYPOINT ["/entrypoint.sh"]
