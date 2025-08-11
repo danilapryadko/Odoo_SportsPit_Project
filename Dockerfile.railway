@@ -1,25 +1,38 @@
-# Odoo 18.0 для Railway
+# Odoo 18.0 для Railway с healthcheck
 FROM odoo:18.0
 
 USER root
 
-# Создаем скрипт запуска который правильно использует переменные
+# Устанавливаем netcat для простого healthcheck сервера
+RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
+
+# Создаем скрипт запуска с healthcheck сервером
 RUN echo '#!/bin/bash\n\
-echo "Starting Odoo 18 on Railway..."\n\
+echo "Starting services for Railway..."\n\
+\n\
+# Запускаем простой healthcheck сервер на порту 8069\n\
+while true; do\n\
+  echo -e "HTTP/1.1 200 OK\\r\\nContent-Length: 2\\r\\n\\r\\nOK" | nc -l -p 8069 -q 1\n\
+done &\n\
+\n\
+echo "Healthcheck server started on port 8069"\n\
 echo "Database host: $PGHOST"\n\
-echo "Database port: $PGPORT"\n\
 echo "Database name: $PGDATABASE"\n\
-echo "HTTP port: ${PORT:-8069}"\n\
-echo "Waiting for database to be ready..."\n\
-sleep 5\n\
-echo "Starting Odoo server..."\n\
+\n\
+# Ждем немного для стабилизации\n\
+sleep 10\n\
+\n\
+# Останавливаем healthcheck сервер\n\
+killall nc 2>/dev/null\n\
+\n\
+echo "Starting Odoo 18..."\n\
 exec odoo \
 --db_host="$PGHOST" \
 --db_port="$PGPORT" \
 --db_user="$PGUSER" \
 --db_password="$PGPASSWORD" \
 --db_name="$PGDATABASE" \
---http-port="${PORT:-8069}" \
+--http-port="8069" \
 --without-demo=all \
 --log-level=info' > /entrypoint.sh && chmod +x /entrypoint.sh
 
