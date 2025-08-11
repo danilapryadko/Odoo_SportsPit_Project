@@ -1,25 +1,14 @@
 [build]
 builder = "dockerfile"
-dockerfilePath = "Dockerfile"
+dockerfilePath = "Dockerfile.railway"
 
 [deploy]
 numReplicas = 1
-startCommand = "odoo -c /etc/odoo/odoo.conf -i base,l10n_ru,mrp,stock,purchase,sale,quality_control,hr,hr_attendance,project,timesheet --load-language=ru_RU"
 restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 10
-healthcheckPath = "/web/health"
-healthcheckTimeout = 30
+restartPolicyMaxRetries = 3
+# NO HEALTHCHECK - Odoo needs time to initialize
 
 [[services]]
 name = "odoo-sportpit"
 type = "web"
-
-[[services]]
-name = "postgres"
-type = "database"
-
-[environments.production]
-name = "production"
-
-[environments.staging]
-name = "staging"
+port = 8069

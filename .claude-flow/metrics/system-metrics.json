@@ -322,5 +322,77 @@
     "cpuLoad": 0.926953125,
     "platform": "darwin",
     "uptime": 87274
+  },
+  {
+    "timestamp": 1754902051563,
+    "memoryTotal": 17179869184,
+    "memoryUsed": 16975478784,
+    "memoryFree": 204390400,
+    "memoryUsagePercent": 98.8102912902832,
+    "memoryEfficiency": 1.1897087097167969,
+    "cpuCount": 10,
+    "cpuLoad": 0.756640625,
+    "platform": "darwin",
+    "uptime": 87304
+  },
+  {
+    "timestamp": 1754902081566,
+    "memoryTotal": 17179869184,
+    "memoryUsed": 17101996032,
+    "memoryFree": 77873152,
+    "memoryUsagePercent": 99.54671859741211,
+    "memoryEfficiency": 0.4532814025878906,
+    "cpuCount": 10,
+    "cpuLoad": 0.615478515625,
+    "platform": "darwin",
+    "uptime": 87334
+  },
+  {
+    "timestamp": 1754902111567,
+    "memoryTotal": 17179869184,
+    "memoryUsed": 17084170240,
+    "memoryFree": 95698944,
+    "memoryUsagePercent": 99.44295883178711,
+    "memoryEfficiency": 0.5570411682128906,
+    "cpuCount": 10,
+    "cpuLoad": 0.62314453125,
+    "platform": "darwin",
+    "uptime": 87364
+  },
+  {
+    "timestamp": 1754902141569,
+    "memoryTotal": 17179869184,
+    "memoryUsed": 17100275712,
+    "memoryFree": 79593472,
+    "memoryUsagePercent": 99.53670501708984,
+    "memoryEfficiency": 0.46329498291015625,
+    "cpuCount": 10,
+    "cpuLoad": 0.490478515625,
+    "platform": "darwin",
+    "uptime": 87394
+  },
+  {
+    "timestamp": 1754902171570,
+    "memoryTotal": 17179869184,
+    "memoryUsed": 17068228608,
+    "memoryFree": 111640576,
+    "memoryUsagePercent": 99.35016632080078,
+    "memoryEfficiency": 0.6498336791992188,
+    "cpuCount": 10,
+    "cpuLoad": 0.42802734375,
+    "platform": "darwin",
+    "uptime": 87424
+  },
+  {
+    "timestamp": 1754902201571,
+    "memoryTotal": 17179869184,
+    "memoryUsed": 17023762432,
+    "memoryFree": 156106752,
+    "memoryUsagePercent": 99.09133911132812,
+    "memoryEfficiency": 0.908660888671875,
+    "cpuCount": 10,
+    "cpuLoad": 0.454638671875,
+    "platform": "darwin",
+    "uptime": 87454
   }
 ]
